@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Diabo uses speech recognition to allow you to speak your health questions to the AI assistant.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Diabo needs microphone access to enable voice input for the AI health assistant.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Diabo needs access to your photo library to upload medical reports and lab results for AI analysis.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Diabo can use your camera to capture medical documents and lab reports for analysis.</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+</dict>
+</plist>
+

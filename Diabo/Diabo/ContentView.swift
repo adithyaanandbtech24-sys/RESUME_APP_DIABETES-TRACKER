@@ -1,0 +1,3911 @@
+import SwiftUI
+import SwiftData
+import PhotosUI
+import Foundation
+import Combine
+import Charts
+import FirebaseAuth
+import Speech
+import AVFoundation
+
+// MARK: - Vital Category Model
+struct VitalCategory {
+    let name: String
+    let icon: String
+    let color: Color
+    let description: String
+}
+
+
+// MARK: - Main Entry Point
+struct RootContentView: View {
+    @State private var selectedTab: Tab = .home
+    @State private var showUploadSheet = false
+    @State private var buttonOffset: CGSize = .zero
+    @State private var lastButtonOffset: CGSize = .zero
+    
+    init() {
+        // Hide default TabBar to use our custom one
+        UITabBar.appearance().isHidden = true
+    }
+    
+    @Environment(\.modelContext) private var modelContext
+    @ObservedObject private var appManager = AppManager.shared
+    
+    // Guest Limit Modal
+    @State private var showGuestLimitModal = false
+
+    // Intro State
+    @State private var showIntro = true
+
+    var body: some View {
+        Group {
+            switch appManager.appState {
+            case .allInOneDashboard:
+                AllInOneDashboardView()
+            case .auth:
+                AuthenticationView()
+            case .setup:
+                PostLoginSetupView()
+            case .welcomeAnimation:
+                WelcomeAnimationView {
+                    appManager.completeSetup()
+                }
+            case .main:
+                mainDashboardView
+            }
+        }
+        .fullScreenCover(isPresented: $showGuestLimitModal) {
+            GuestLimitModal(isPresented: $showGuestLimitModal)
+        }
+        .onChange(of: appManager.guestUploadCount) { _, count in
+            if appManager.isGuestMode && count >= appManager.guestUploadLimit {
+                // Trigger limit modal when guest has used all uploads
+                showGuestLimitModal = true
+            }
+        }
+    }
+    
+    // MARK: - Main Dashboard
+    var mainDashboardView: some View {
+        ZStack(alignment: .bottom) {
+            // Main Content Area
+            TabView(selection: $selectedTab) {
+                DashboardView(selectedTab: $selectedTab)
+                    .tag(Tab.home)
+                
+                ChatbotView()
+                    .tag(Tab.grid)
+                
+                TimelineAnalysisView()
+                    .tag(Tab.stats)
+                
+                DoctorConnectView()
+                    .tag(Tab.doctor)
+            }
+            
+            // Custom Floating Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
+                .padding(.bottom, 20)
+            
+            // Floating Upload Button
+            GeometryReader { geometry in
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            // Pre-check guest limit before showing sheet
+                            if appManager.canUploadInGuestMode() {
+                                showUploadSheet.toggle()
+                            } else {
+                                showGuestLimitModal = true
+                            }
+                        }) {
+                            Image(systemName: "doc.viewfinder")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.black)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+                        .offset(x: buttonOffset.width, y: buttonOffset.height)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    buttonOffset = CGSize(
+                                        width: lastButtonOffset.width + value.translation.width,
+                                        height: lastButtonOffset.height + value.translation.height
+                                    )
+                                }
+                                .onEnded { _ in
+                                    lastButtonOffset = buttonOffset
+                                }
+                        )
+                        .padding(.bottom, 100)
+                        .padding(.trailing, 20)
+                    }
+                }
+            }
+        }
+        .ignoresSafeArea(.keyboard)
+        .sheet(isPresented: $showUploadSheet) {
+            UploadDocumentView(onUploadSuccess: {
+                handleUploadSuccess()
+            })
+        }
+    }
+    
+    // MARK: - Upload Success Handler
+    private func handleUploadSuccess() {
+        // 1. Switch to Chatbot Tab
+        selectedTab = .grid
+        
+        // Note: Chat message is now generated by ReportService after AI analysis completes.
+        // This ensures the summary has access to all extracted lab results and medications.
+    }
+}
+
+// MARK: - 1. Dashboard View
+struct DashboardView: View {
+    @Binding var selectedTab: Tab
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \MedicalReportModel.uploadDate, order: .reverse) private var reports: [MedicalReportModel]
+    @Query(sort: \LabResultModel.testDate, order: .reverse) private var labResults: [LabResultModel]
+    @Query(sort: \MedicationModel.startDate, order: .reverse) private var medications: [MedicationModel]
+    @Query(sort: \ParameterTrendModel.date, order: .reverse) private var parameterTrends: [ParameterTrendModel]
+    @Query(animation: .default) private var userProfiles: [UserProfileModel] // Added animation
+    
+    @State private var selectedMedication: MedicationModel?
+    @State private var selectedParameter: LabResultModel?
+    @State private var selectedReportForView: MedicalReportModel?
+    @State private var showSearch = false
+    @State private var searchText = ""
+    @State private var isEditingMedications = false
+    @State private var showAddMedication = false
+    
+    // Vitals Bento Grid State
+    @State private var showAllVitals = false
+    @State private var showVitalDetail = false
+    @State private var selectedVitalCategory: String = ""
+    
+    // Comprehensive Vitals Categories (56+ vitals organized by category)
+    private var vitalCategories: [VitalCategory] {
+        [
+            // Core Vitals
+            VitalCategory(name: "Heart Rate", icon: "heart.fill", color: .red, description: "Pulse & cardiovascular rhythm"),
+            VitalCategory(name: "Blood Pressure", icon: "waveform.path.ecg", color: .blue, description: "Systolic/Diastolic/MAP"),
+            VitalCategory(name: "Temperature", icon: "thermometer", color: .orange, description: "Oral, Axillary, Tympanic"),
+            VitalCategory(name: "SpO₂", icon: "lungs.fill", color: .cyan, description: "Oxygen saturation"),
+            VitalCategory(name: "Respiratory Rate", icon: "wind", color: .teal, description: "Breaths per minute"),
+            
+            // Extended Vitals
+            VitalCategory(name: "Blood Glucose", icon: "drop.fill", color: .purple, description: "Blood sugar levels"),
+            VitalCategory(name: "Weight", icon: "figure", color: .green, description: "Body weight tracking"),
+            VitalCategory(name: "Height", icon: "ruler", color: .indigo, description: "Body height"),
+            VitalCategory(name: "BMI", icon: "chart.bar.fill", color: .mint, description: "Body Mass Index"),
+            VitalCategory(name: "Pain Score", icon: "bandage.fill", color: .pink, description: "VAS / Numeric scale"),
+            
+            // Cardiovascular
+            VitalCategory(name: "HRV", icon: "waveform.path.ecg.rectangle", color: .red, description: "Heart Rate Variability"),
+            VitalCategory(name: "Pulse Pressure", icon: "arrow.up.arrow.down", color: .blue, description: "Systolic - Diastolic"),
+            VitalCategory(name: "Cardiac Output", icon: "heart.circle", color: .red, description: "Blood pumped per minute"),
+            
+            // Sleep & Recovery
+            VitalCategory(name: "Sleep Duration", icon: "moon.fill", color: .indigo, description: "Total sleep time"),
+            VitalCategory(name: "Sleep Stages", icon: "bed.double.fill", color: .purple, description: "REM, Deep, Light"),
+            VitalCategory(name: "Resting HR", icon: "heart.text.square", color: .red, description: "Resting heart rate"),
+            
+            // Activity
+            VitalCategory(name: "Step Count", icon: "figure.walk", color: .green, description: "Daily steps"),
+            VitalCategory(name: "VO₂ Max", icon: "lungs", color: .cyan, description: "Aerobic capacity"),
+            VitalCategory(name: "Activity", icon: "flame.fill", color: .orange, description: "Active minutes & calories"),
+            
+            // Metabolic
+            VitalCategory(name: "Stress Index", icon: "brain.head.profile", color: .pink, description: "Mental stress levels"),
+            VitalCategory(name: "Recovery Score", icon: "arrow.triangle.2.circlepath", color: .green, description: "Body recovery status"),
+            VitalCategory(name: "Hydration", icon: "drop.triangle.fill", color: .blue, description: "Fluid intake & output")
+        ]
+    }
+    
+    // Computed properties for dashboard data - only show uploaded medications
+    private var uniqueParameters: [LabResultModel] {
+        var dict: [String: LabResultModel] = [:]
+        // labResults is already sorted by date desc from Query
+        for result in labResults {
+            if dict[result.testName] == nil {
+                dict[result.testName] = result
+            }
+        }
+        return Array(dict.values).sorted { $0.testName < $1.testName }
+    }
+    
+    private var activeMedications: [MedicationModel] {
+        let uploadedMeds = MedicationManager.shared.getUploadedMedications(context: modelContext)
+        return uploadedMeds.filter { $0.isActive }
+    }
+    
+    private var allUploadedMedications: [MedicationModel] {
+        MedicationManager.shared.getUploadedMedications(context: modelContext)
+    }
+    
+    private var recentReports: [MedicalReportModel] {
+        Array(reports.prefix(5))
+    }
+    
+    private var abnormalLabResults: [LabResultModel] {
+        labResults.filter { $0.status != "Normal" && $0.status != "Optimal" }
+    }
+    
+    private var healthScore: Int {
+        // Calculate health score based on lab results
+        let normalCount = labResults.filter { $0.status == "Normal" || $0.status == "Optimal" }.count
+        let totalCount = max(labResults.count, 1)
+        return Int((Double(normalCount) / Double(totalCount)) * 100)
+    }
+    
+    /// Data-driven health summary for dashboard
+    private var healthOverviewSummary: String {
+        let hasReports = !reports.isEmpty
+        let hasLabResults = !labResults.isEmpty
+        let hasMedications = !activeMedications.isEmpty
+        
+        if !hasReports && !hasLabResults {
+            return "Upload reports to see personalized insights"
+        } else if hasLabResults && hasMedications {
+            return "Comprehensive health data available"
+        } else if hasLabResults {
+            return "Based on your recent test results"
+        } else {
+            return "Limited data - upload more reports"
+        }
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 2) {
+                    // Header
+                    HStack {
+                        // Profile Image -> Settings
+                        NavigationLink(destination: SettingsView()) {
+                            HStack(spacing: 8) {
+                                if let photoData = userProfiles.first?.profilePhotoData, let uiImage = UIImage(data: photoData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 50, height: 50)
+                                        .clipShape(Circle())
+                                        .foregroundColor(.gray)
+                                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack(spacing: 8) {
+                                        // Robust Name Display
+                                        let userName = userProfiles.first?.name ?? "User"
+                                        Text("Hello, \(userName)")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.black)
+                                        
+                                        // Diabetes Type Badge
+                                        if let diabetesType = userProfiles.first?.diabetesType, !diabetesType.isEmpty {
+                                            Text(diabetesType)
+                                                .font(.system(size: 10, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(Color.appPurple)
+                                                .cornerRadius(8)
+                                        }
+                                    }
+                                    Text("Welcome to MediSync")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle()) // Remore navigation link highlight
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showSearch = true
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 20))
+                                .foregroundColor(.black)
+                                .padding(10)
+                                .background(Color.white.opacity(0.001)) // Ensure it catches taps even if transparent
+                                .contentShape(Circle())
+                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                    .zIndex(10) // Ensure header stays on top for hit-testing
+
+                    // MARK: - My Goals Section
+                    if let profile = userProfiles.first {
+                        let targets = DiabetesTargetEngine.shared.glucoseTargets(for: profile)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                GoalPill(title: "HbA1c", value: "< \(String(format: "%.1f", targets.hba1cGoal ?? 7.0))%", color: .purple)
+                                GoalPill(title: "Fasting", value: "\(Int(targets.fastingMin))-\(Int(targets.fastingMax))", color: .green)
+                                GoalPill(title: "Post-Meal", value: "< \(Int(targets.postPrandialMax))", color: .blue)
+                                if let weight = profile.weight {
+                                    GoalPill(title: "Weight", value: "\(Int(weight)) kg", color: .orange)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.bottom, 10)
+                    }
+                    
+                    
+                    // Daily Challenge Card (Health Overview)
+                    ZStack {
+
+                        // Purple card background ONLY
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(Color.appPurple)
+                            .frame(height: 180)
+                            .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
+                            .padding(.horizontal)
+
+                        // Content text pinned left side
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Health Overview")
+                                .font(.title3).bold()
+                                .foregroundColor(.white)
+
+                            Text("Start your Journey!")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.85))
+
+                            Spacer().frame(height: 10)
+
+                            Text(healthOverviewSummary)
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.7))
+
+                            HStack(spacing: -12) {
+                                ForEach(0..<3) { _ in
+                                    Circle()
+                                        .fill(Color.white.opacity(0.25))
+                                        .frame(width: 30, height: 30)
+                                        .overlay(Image(systemName: "person.fill").foregroundColor(.white))
+                                }
+
+                                Circle()
+                                    .fill(Color.black.opacity(0.5))
+                                    .frame(width: 30, height: 30)
+                                    .overlay(Text("+4")
+                                        .font(.caption2)
+                                        .foregroundColor(.white))
+                            }
+                            .padding(.top, 6)
+                        }
+                        .padding(.leading, 40)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(height: 180)
+
+                        // MONSTER — large and OUTSIDE card boundaries
+                        Image("HealthOverviewPerson")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 350)   // Bigger to match actual mockup
+                            .offset(x: 90, y: -30) // Positioned ABOVE the card
+                            .zIndex(10)          // MUST be in front of card
+                    }
+                    .padding(.top, -200) // Decreased space gap
+                    .zIndex(5)
+                    
+                    // Calendar Strip - Showing Only Report Dates
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            if reports.isEmpty {
+                                Text("No reports uploaded yet")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.8))
+                                    .padding()
+                            } else {
+                                ForEach(Array(reports.enumerated()), id: \.element.id) { index, report in
+                                    Button(action: {
+                                        selectedReportForView = report
+                                    }) {
+                                        CalendarDayView(
+                                            day: getDayName(report.displayDate),
+                                            date: getDateNumber(report.displayDate),
+                                            isSelected: index == 0 // Latest report gets black background
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    .padding(.top, -170) // Adjusted to prevent overlap with header
+                    .zIndex(4)
+                    
+                    // MARK: - DIABETES VITALS (New Clinical Engine)
+                    DiabetesVitalsView()
+                        .padding(.top, -70)
+                        .zIndex(3)
+                    
+                    // MARK: - MEDICATIONS SECTION
+                    VStack(alignment: .leading, spacing: 15) {
+                        Spacer()
+                        
+                        // Active Medications Header with Controls
+                        HStack {
+                            Text("Active Medications")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            // Add Button
+                            Button(action: {
+                                showAddMedication = true
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.green)
+                            }
+                            
+                            // Edit/Delete Toggle
+                            Button(action: {
+                                isEditingMedications.toggle()
+                            }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(isEditingMedications ? .red : .gray)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        if activeMedications.isEmpty {
+                            EmptyStateView(
+                                icon: "pills.circle.fill",
+                                title: "No Medications Detected",
+                                message: "No medications were found in your uploaded reports. Tap + to add medications manually."
+                            )
+                            .padding(.horizontal)
+                        } else {
+                            ForEach(activeMedications) { medication in
+                                ZStack(alignment: .topTrailing) {
+                                    Button(action: {
+                                        selectedMedication = medication
+                                    }) {
+                                        HStack(spacing: 15) {
+                                            // Clean pill icon
+                                            Image(systemName: "pills.circle.fill")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 50, height: 50)
+                                                .foregroundColor(.purple.opacity(0.7))
+                                            
+                                            VStack(alignment: .leading, spacing: 5) {
+                                                Text(medication.name)
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.purple)
+                                                
+                                                Text("\(medication.dosage) • \(medication.frequency)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+
+                                                Text(medication.source)
+                                                    .font(.caption2)
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.gray.opacity(0.1))
+                                                    .cornerRadius(4)
+                                                    .foregroundColor(.secondary)
+                                                
+                                                if let instructions = medication.instructions {
+                                                    if !instructions.isEmpty {
+                                                        Text(instructions)
+                                                            .font(.caption)
+                                                            .foregroundColor(.gray)
+                                                            .lineLimit(2)
+                                                    }
+                                                }
+                                            }
+                                            Spacer()
+                                        }
+                                        .padding(20)
+                                        .background(Color(red: 0.92, green: 0.90, blue: 0.98))
+                                        .cornerRadius(20)
+                                        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+                                        .padding(.horizontal)
+                                    }
+                                    
+                                    if isEditingMedications {
+                                        Button(action: {
+                                            deleteMedication(medication)
+                                        }) {
+                                            Image(systemName: "minus.circle.fill")
+                                                .font(.system(size: 24))
+                                                .foregroundColor(.red)
+                                                .background(Circle().fill(Color.white))
+                                        }
+                                        .offset(x: -10, y: -10)
+                                    }
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        deleteMedication(medication)
+                                    } label: {
+                                        Label("Delete Prescription", systemImage: "trash")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, -20)
+                    
+                    // MARK: - PAST MEDICATIONS SECTION
+                    VStack(alignment: .leading, spacing: 15) {
+                        HStack {
+                            Text("Past Medications")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            // Add Button
+                            Button(action: {
+                                showAddMedication = true
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.green)
+                            }
+                            
+                            // Shared Edit Toggle (or separate if preferred, using shared for simplicity + consistency)
+                            Button(action: {
+                                isEditingMedications.toggle()
+                            }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(isEditingMedications ? .red : .gray)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        let pastUploadedMedications = MedicationManager.shared.getUniquePastMedications(context: modelContext)
+                        
+                        if pastUploadedMedications.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "archivebox")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.gray.opacity(0.3))
+                                    .padding(.bottom, 5)
+
+                                Text("No past medications")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                                
+                                Text("Past medications from uploaded documents will appear here")
+                                    .font(.caption)
+                                    .foregroundColor(.gray.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 40)
+                            }
+                            .frame(maxWidth: .infinity) // Center align
+                            .padding(.vertical, 30)
+                            .background(Color.white.opacity(0.5)) // Added background
+                            .cornerRadius(15)
+                            .padding(.horizontal) // Side padding
+                        } else {
+                            ForEach(pastUploadedMedications) { medication in
+                                HStack(spacing: 15) {
+                                    // Clean pill icon - grayed out
+                                    Image(systemName: "pills.circle")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.gray.opacity(0.4))
+                                    
+                                    VStack(alignment: .leading, spacing: 5) {
+                                        Text(medication.name)
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.gray)
+                                        
+                                        Text("\(medication.dosage)")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray.opacity(0.7))
+
+                                        Text(medication.source)
+                                            .font(.caption2)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.gray.opacity(0.1))
+                                            .cornerRadius(4)
+                                            .foregroundColor(.secondary)
+                                        
+                                        if let endDate = medication.endDate {
+                                            Text("Last used: \(endDate.formatted(date: .abbreviated, time: .omitted))")
+                                                .font(.caption)
+                                                .foregroundColor(.gray.opacity(0.6))
+                                        }
+                                    }
+                                    Spacer()
+                                    
+                                    if isEditingMedications {
+                                        Button(action: {
+                                            deleteMedication(medication)
+                                        }) {
+                                            Image(systemName: "minus.circle.fill")
+                                                .font(.system(size: 24))
+                                                .foregroundColor(.red)
+                                        }
+                                    }
+                                }
+                                .padding(20)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(20)
+                                .padding(.horizontal)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        deleteMedication(medication)
+                                    } label: {
+                                        Label("Delete Prescription", systemImage: "trash")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 10)
+                    
+                    Spacer().frame(height: 100) // Bottom padding
+                .onAppear {
+                    // DemoDataManager.shared.clearAllDemoData(context: modelContext) // Disabled to persist user data
+                    MedicationManager.shared.initializeMedications(context: modelContext)
+                    MedicationManager.shared.cleanUpInvalidMedications(context: modelContext)
+                }
+                }
+            }
+            .navigationBarHidden(true)
+            .sheet(item: $selectedMedication) { medication in
+                MedicationDetailView(medication: medication)
+            }
+            .sheet(item: $selectedParameter) { param in
+                ParameterDetailView(
+                    testName: param.testName,
+                    latestValue: param.value,
+                    unit: param.unit,
+                    status: calculateParameterStatus(
+                        value: param.value,
+                        normalRange: param.normalRange,
+                        refMin: nil,
+                        refMax: nil
+                    ),
+                    normalRange: param.normalRange,
+                    color: getCategoryColor(param.category)
+                )
+            }
+            .sheet(isPresented: $showSearch) {
+                SearchView(searchText: $searchText, labResults: labResults, medications: medications, selectedTab: $selectedTab)
+                    .modelContext(modelContext)
+            }
+            .sheet(item: $selectedReportForView) { report in
+                ReportDetailView(report: report)
+            }
+            .sheet(isPresented: $showAddMedication) {
+                AddMedicationView()
+            }
+            .sheet(isPresented: $showVitalDetail) {
+                VitalDetailView(
+                    vitalName: selectedVitalCategory,
+                    labResults: labResults
+                )
+            }
+        }
+    }
+    
+    // Helper function for category colors - Unified Professional Purple Theme
+    func getCategoryColor(_ category: String) -> Color {
+        // We use a unified palette for trust and professionalism
+        // but can use subtle variations if needed in the future.
+        return Color.medicalPurpleLight
+    }
+    
+    // Helper functions for organ details
+    func getOrganIcon(_ organ: String) -> String {
+        switch organ {
+        case "Lungs": return "lungs.fill"
+        case "Heart": return "heart.fill"
+        case "Kidneys": return "drop.fill"
+        case "Liver": return "cross.case.fill"
+        case "Eyes": return "eye.fill"
+        case "Ears": return "ear.fill"
+        case "Brain": return "brain.head.profile"
+        case "Bones": return "figure.stand"
+        default: return "heart.fill"
+        }
+    }
+    
+    func getOrganColor(_ organ: String) -> Color {
+        switch organ {
+        case "Lungs": return Color.appYellow
+        case "Heart": return Color.appBlue
+        case "Kidneys": return Color.appBlue
+        case "Liver": return Color.appOrange
+        case "Eyes": return Color.appGreen
+        case "Ears": return Color.appLightBlue
+        case "Brain": return Color.appPurple
+        case "Bones": return Color.appOrange
+        default: return Color.appPurple
+        }
+    }
+    
+    // Helper functions for dynamic calendar
+    func getWeekDates() -> [Date] {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Get Sunday of current week
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else {
+            return []
+        }
+        
+        // Generate 7 days starting from Sunday
+        var dates: [Date] = []
+        for i in 0..<7 {
+            if let date = calendar.date(byAdding: .day, value: i, to: weekInterval.start) {
+                dates.append(date)
+            }
+        }
+        return dates
+    }
+    
+    func getDayName(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: date)
+    }
+    
+    func getDateNumber(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let day = calendar.component(.day, from: date)
+        return "\(day)"
+    }
+    
+    func deleteMedication(_ medication: MedicationModel) {
+        modelContext.delete(medication)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error deleting medication: \(error)")
+        }
+    }
+}
+
+// MARK: - Organ Detail View
+struct OrganDetailView: View {
+    let organName: String
+    let organIcon: String
+    let organColor: Color
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(organName)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    // Placeholder for symmetry
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.clear)
+                }
+                .padding()
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Organ Icon
+                        ZStack {
+                            Circle()
+                                .fill(organColor.opacity(0.2))
+                                .frame(width: 120, height: 120)
+                            
+                            Image(systemName: organIcon)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 60, height: 60)
+                                .foregroundColor(organColor)
+                        }
+                        .padding(.top, 20)
+                        
+                        // NEW: Real-Time Graph Section
+                        ParameterGraphView(
+                            parameterName: organName,
+                            color: organColor
+                        )
+                        .padding(.bottom, 20)
+                        
+                        // Lab Results Section
+                        VStack(alignment: .leading, spacing: 15) {
+                            Text("Lab Results & Parameters")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .padding(.horizontal)
+                            
+                            // Dynamic content based on organ
+                            ForEach(getLabResults(), id: \.id) { result in
+                                TimelineItemCard(result: result, backgroundColor: Color.clear)
+                            }
+                        }
+                        
+                        Spacer().frame(height: 30)
+                    }
+                }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+    
+    // Fetch all lab results from SwiftData and filter for the current organ
+    @Query(sort: \LabResultModel.testDate, order: .reverse) private var allLabResults: [LabResultModel]
+    
+    func getLabResults() -> [LabResultModel] {
+        // Filter results where the category or test name matches the organ name
+        allLabResults.filter { $0.category.contains(organName) || $0.testName.contains(organName) }
+    }
+}
+
+// MARK: - Lab Result Model
+struct LabResult {
+    let name: String
+    let value: String
+    let range: String
+    let status: LabStatus
+}
+
+enum LabStatus {
+    case normal, warning, critical
+    
+    var color: Color {
+        switch self {
+        case .normal: return .green
+        case .warning: return .orange
+        case .critical: return .red
+        }
+    }
+}
+
+// MARK: - Lab Result Card
+struct LabResultCard: View {
+    let result: LabResult
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(result.name)
+                    .font(.system(size: 16, weight: .semibold))
+                
+                Text("Normal range: \(result.range)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 5) {
+                Text(result.value)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(result.status.color)
+                
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(result.status.color)
+                        .frame(width: 8, height: 8)
+                    Text(result.status == .normal ? "Normal" : result.status == .warning ? "Warning" : "Critical")
+                        .font(.caption2)
+                        .foregroundColor(result.status.color)
+                }
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(15)
+        .padding(.horizontal)
+    }
+}
+
+// MARK: - Vital Display Card (For Real-time Physiological Signals)
+struct VitalDisplayCard: View {
+    let icon: String
+    let title: String
+    let value: String
+    let unit: String
+    let color: Color
+    let subtitle: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(color)
+                
+                Spacer()
+            }
+            
+            Spacer()
+            
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+                
+                Text(unit)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.primary)
+            
+            Text(subtitle)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+        .padding(16)
+        .frame(height: 140)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(color: color.opacity(0.15), radius: 8, x: 0, y: 4)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(color.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Vital Detail View (History, Graph, Medications)
+struct VitalDetailView: View {
+    let vitalName: String
+    let labResults: [LabResultModel]
+    @Environment(\.dismiss) var dismiss
+    
+    // Filter results that match this vital category
+    private var relevantResults: [LabResultModel] {
+        labResults.filter { result in
+            switch vitalName.lowercased() {
+            case "lungs", "respiratory":
+                return result.category.lowercased().contains("respiratory") ||
+                       result.testName.lowercased().contains("spo2") ||
+                       result.testName.lowercased().contains("oxygen") ||
+                       result.testName.lowercased().contains("respiratory")
+            case "heart", "cardiovascular":
+                return result.category.lowercased().contains("cardiovascular") ||
+                       result.category.lowercased().contains("vitals") ||
+                       result.testName.lowercased().contains("heart") ||
+                       result.testName.lowercased().contains("pulse") ||
+                       result.testName.lowercased().contains("bp") ||
+                       result.testName.lowercased().contains("blood pressure")
+            default:
+                return result.testName.lowercased().contains(vitalName.lowercased()) ||
+                       result.category.lowercased().contains(vitalName.lowercased())
+            }
+        }.sorted { $0.testDate > $1.testDate }
+    }
+    
+    private var vitalDescription: String {
+        switch vitalName.lowercased() {
+        case "lungs", "respiratory":
+            return "Respiratory vitals monitor your lung function and oxygen levels. Key indicators include SpO₂ (oxygen saturation), respiratory rate, and peak expiratory flow."
+        case "heart", "cardiovascular":
+            return "Cardiovascular vitals track your heart health including heart rate, blood pressure, and heart rhythm. Regular monitoring helps detect anomalies early."
+        case "heart rate":
+            return "Heart rate measures the number of times your heart beats per minute. A normal resting heart rate is 60-100 bpm for adults."
+        case "blood pressure":
+            return "Blood pressure measures the force of blood against artery walls. Normal is typically around 120/80 mmHg."
+        case "temperature":
+            return "Body temperature indicates your thermal regulation. Normal range is 97.8°F to 99.1°F (36.5°C to 37.3°C)."
+        case "spo₂":
+            return "Oxygen saturation measures the percentage of hemoglobin bound with oxygen. Normal is 95-100%."
+        case "weight":
+            return "Body weight tracking helps monitor overall health, nutrition, and medication effects."
+        default:
+            return "This vital sign helps monitor your \(vitalName.lowercased()) health status over time."
+        }
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(vitalName)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        Text(vitalDescription)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal)
+                    
+                    // Graph Section
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("History")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        if relevantResults.isEmpty {
+                            VStack(spacing: 12) {
+                                Image(systemName: "chart.line.uptrend.xyaxis")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.gray)
+                                Text("No data available yet")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                                Text("Upload reports containing \(vitalName) measurements to see your history.")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(16)
+                            .padding(.horizontal)
+                        } else {
+                            // Chart
+                            Chart {
+                                ForEach(relevantResults.prefix(10), id: \.id) { result in
+                                    LineMark(
+                                        x: .value("Date", result.testDate),
+                                        y: .value("Value", result.value)
+                                    )
+                                    .foregroundStyle(Color.blue.gradient)
+                                    
+                                    PointMark(
+                                        x: .value("Date", result.testDate),
+                                        y: .value("Value", result.value)
+                                    )
+                                    .foregroundStyle(Color.blue)
+                                }
+                            }
+                            .frame(height: 200)
+                            .padding(.horizontal)
+                        }
+                    }
+                    
+                    // Recent Readings
+                    if !relevantResults.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Recent Readings")
+                                .font(.headline)
+                                .padding(.horizontal)
+                            
+                            ForEach(relevantResults.prefix(5), id: \.id) { result in
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(result.testName)
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        Text(result.testDate, style: .date)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text("\(String(format: "%.1f", result.value)) \(result.unit)")
+                                            .font(.headline)
+                                            .foregroundColor(.blue)
+                                        Text(result.status)
+                                            .font(.caption)
+                                            .foregroundColor(result.status == "Normal" ? .green : .orange)
+                                    }
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
+                            }
+                        }
+                    }
+                    
+                    Spacer(minLength: 50)
+                }
+                .padding(.top)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Medication Detail Popup View
+struct MedicationDetailView: View {
+    let medication: MedicationModel
+    @Environment(\.presentationMode) var presentationMode
+
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Close Button & Image Area
+                ZStack(alignment: .topTrailing) {
+                    
+                    // Simulated Large 3D Pill
+                    VStack {
+                        Spacer()
+                        ZStack {
+                            Circle()
+                                .fill(Color.appPink.opacity(0.2))
+                                .frame(width: 150, height: 150)
+                                .blur(radius: 20)
+                            
+                            Image(systemName: "pills.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 120, height: 120)
+                                .foregroundColor(.appPink)
+                                .rotationEffect(.degrees(-10))
+                                .shadow(color: .appPink.opacity(0.5), radius: 10, x: 0, y: 10)
+                        }
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.gray)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
+                    }
+                    .padding()
+                }
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        
+                        // Title Header
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(medication.name)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.3))
+                            
+                            Text("Medication • \(medication.dosage)")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        // Stats Row
+                        HStack(spacing: 15) {
+                            HStack {
+                                Image(systemName: "pill.fill")
+                                    .foregroundColor(.pink)
+                                VStack(alignment: .leading) {
+                                    Text(medication.dosage)
+                                        .fontWeight(.bold)
+                                    Text("Dosage")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.gray.opacity(0.05))
+                            .cornerRadius(15)
+                            
+                            HStack {
+                                Image(systemName: "clock.fill")
+                                    .foregroundColor(.purple)
+                                VStack(alignment: .leading) {
+                                    Text(medication.frequency)
+                                        .fontWeight(.bold)
+                                    Text("Frequency")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.gray.opacity(0.05))
+                            .cornerRadius(15)
+                        }
+                        
+                        // About Section (API-powered)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("About Drug")
+                                .font(.headline)
+                                .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.3))
+                            
+                            if let notes = medication.notes, !notes.isEmpty {
+                                Text(notes)
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            } else {
+                                MedicationDescriptionView(medicationName: medication.name)
+                            }
+                        }
+                        
+                        // Recommended Dosage Section (API-powered)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Recommended Dosage & Frequency")
+                                .font(.headline)
+                                .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.3))
+                            
+                            MedicationDosageView(medicationName: medication.name)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        
+                        // Side Effects Section (API-powered)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Possible Side Effects")
+                                .font(.headline)
+                                .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.3))
+                            
+                            MedicationSideEffectsView(medicationName: medication.name)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.orange.opacity(0.1))
+                                .cornerRadius(15)
+                        }
+                        
+                        // Alternatives Section
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Possible Alternatives")
+                                .font(.headline)
+                                .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.3))
+                            
+                            HStack {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .resizable()
+                                    .frame(width: 20, height: 18)
+                                    .foregroundColor(.blue)
+                                    .padding(10)
+                                    .background(Color.white)
+                                    .clipShape(Circle())
+                                    .shadow(color: .black.opacity(0.05), radius: 2)
+                                
+                                Text(medication.alternatives ?? "No alternatives listed.")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.gray)
+                                
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Color.appPurple.opacity(0.15))
+                            .cornerRadius(20)
+                        }
+                        
+                        Spacer().frame(height: 30)
+                    }
+                    .padding(.horizontal, 25)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Medication Info Helper Views (API-Powered)
+struct MedicationDescriptionView: View {
+    let medicationName: String
+    @State private var description: String = "Loading..."
+    @State private var isLoading = true
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            if isLoading {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Fetching drug info...")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            } else {
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+        }
+        .task {
+            let info = await ChatService.shared.getMedicationInfo(medicationName: medicationName)
+            await MainActor.run {
+                description = info.description
+                isLoading = false
+            }
+        }
+    }
+}
+
+struct MedicationSideEffectsView: View {
+    let medicationName: String
+    @State private var sideEffects: [String] = []
+    @State private var isLoading = true
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if isLoading {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading side effects...")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            } else if sideEffects.isEmpty {
+                Text("No side effects information available.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            } else {
+                ForEach(sideEffects, id: \.self) { effect in
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.orange)
+                        Text(effect)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(12)
+        .task {
+            let info = await ChatService.shared.getMedicationInfo(medicationName: medicationName)
+            await MainActor.run {
+                sideEffects = info.sideEffects
+                isLoading = false
+            }
+        }
+    }
+}
+
+// MARK: - Medication Dosage View (API-Powered)
+struct MedicationDosageView: View {
+    let medicationName: String
+    @State private var dosage: String = ""
+    @State private var frequency: String = ""
+    @State private var isLoading = true
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if isLoading {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading dosage info...")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            } else {
+                // Recommended Dosage
+                HStack(spacing: 10) {
+                    Image(systemName: "pill.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Dosage")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Text(dosage)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.black)
+                    }
+                }
+                
+                // Recommended Frequency
+                HStack(spacing: 10) {
+                    Image(systemName: "clock.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Frequency")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Text(frequency)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.black)
+                    }
+                }
+            }
+        }
+        .task {
+            let info = await ChatService.shared.getMedicationInfo(medicationName: medicationName)
+            await MainActor.run {
+                dosage = info.recommendedDosage
+                frequency = info.recommendedFrequency
+                isLoading = false
+            }
+        }
+    }
+}
+
+struct CalendarDayView: View {
+    let day: String
+    let date: String
+    var isSelected: Bool = false
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(day)
+                .font(.system(size: 12))
+                .foregroundColor(isSelected ? .white.opacity(0.8) : .gray)
+            Text(date)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(isSelected ? .white : .black)
+        }
+        .frame(width: 60, height: 85)
+        .background(isSelected ? Color.black : Color.white)
+        .cornerRadius(30)
+        .overlay(
+            RoundedRectangle(cornerRadius: 30)
+                .stroke(Color.gray.opacity(0.2), lineWidth: isSelected ? 0 : 1)
+        )
+    }
+}
+
+struct SocialIcon: View {
+    let icon: String
+    var body: some View {
+        Circle()
+            .fill(Color.white.opacity(0.5))
+            .frame(width: 35, height: 35)
+            .overlay(
+                Image(systemName: icon)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white)
+            )
+    }
+}
+
+// MARK: - Organ Card Component
+struct OrganCard: View {
+    let organName: String
+    let organIcon: String
+    let organColor: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 12) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(organColor.opacity(0.2))
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: organIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(organColor)
+                }
+                
+                // Organ Name
+                Text(organName)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.black)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        }
+    }
+}
+
+// MARK: - Small Organ Button (for expandable card)
+struct SmallOrganButton: View {
+    let icon: String
+    let name: String
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 45, height: 45)
+                    .overlay(
+                        Image(systemName: icon)
+                            .font(.system(size: 18))
+                            .foregroundColor(.white)
+                    )
+                
+                Text(name)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+// MARK: - Scale Button Style
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+// MARK: - 5. Upload handled by UploadDocumentView.swift (separate file)
+
+
+struct StatCard: View {
+    let title: String
+    let value: String
+    let unit: String
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.system(size: 11))
+                .foregroundColor(.black.opacity(0.6))
+            
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 18, weight: .bold))
+                Text(unit)
+                    .font(.system(size: 12, weight: .semibold))
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 80)
+        .background(color)
+        .cornerRadius(15)
+    }
+}
+
+struct ProfileListItem: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    var showDivider: Bool = true
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(.black)
+                .frame(width: 30)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.gray)
+        }
+        .padding(.vertical, 16)
+    }
+}
+
+// MARK: - 2. AI Chatbot View
+struct ChatbotView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \AIChatMessage.timestamp, order: .forward) private var chatHistory: [AIChatMessage]
+    
+    @State private var messageText = ""
+    @State private var isTyping = false
+    @State private var errorMessage: String?
+    @State private var showReminderSheet = false
+    
+    let suggestedPrompts = [
+        "Explain my lab results",
+        "Medication reminders",
+        "Diet recommendations",
+        "Exercise tips"
+    ]
+    
+    @StateObject private var speechRecognizer = SpeechRecognizer()
+    @State private var isRecording = false
+    
+    // Rotating Daily Tips
+    let dailyTips = [
+        DailyTip(title: "Hydration is Key", description: "Drinking enough water helps your kidneys filter waste from your blood. Aim for 8 glasses a day!"),
+        DailyTip(title: "Monitor Carbs", description: "For better blood sugar control, try to spread your carbohydrate intake evenly throughout the day."),
+        DailyTip(title: "Foot Care", description: "Check your feet daily for cuts, blisters, or red spots. Good foot care is essential for diabetes management."),
+        DailyTip(title: "Stress Management", description: "High stress can raise blood sugar levels. Try deep breathing or meditation for 5 minutes today.")
+    ]
+    @State private var currenTip: DailyTip?
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header with gradient
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.6, green: 0.4, blue: 0.9),
+                        Color(red: 0.5, green: 0.3, blue: 0.8)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                
+                VStack(spacing: 6) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 28))
+                        .foregroundColor(.white)
+                    
+                    Text("AI Health Assistant")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("Powered by Advanced Medical AI")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.top, 40)
+                .padding(.bottom, 15)
+            }
+            .frame(height: 120)
+            
+            // Chat Messages
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        // Show chat history from SwiftData
+                        ForEach(chatHistory) { message in
+                            ChatBubble(message: ChatMessage(
+                                text: message.text,
+                                isUser: message.isUser
+                            ))
+                                .id(message.id)
+                        }
+                        
+                        // Typing Indicator
+                        if isTyping {
+                            HStack {
+                                TypingIndicator()
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        // Show error if any
+                        if let error = errorMessage {
+                            Text("Error: \(error)")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                                .padding()
+                        }
+                        
+                        // Empty State: Suggestions & Daily Tips
+                        if chatHistory.count <= 1 {
+                            VStack(spacing: 20) {
+                                // Suggested Questions
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Suggested Questions")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.gray)
+                                        .padding(.horizontal)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 10) {
+                                            ForEach(suggestedPrompts, id: \.self) { prompt in
+                                                Button(action: {
+                                                    sendMessage(prompt)
+                                                }) {
+                                                    Text(prompt)
+                                                        .font(.system(size: 13, weight: .medium))
+                                                        .foregroundColor(Color(red: 0.6, green: 0.4, blue: 0.9))
+                                                        .padding(.horizontal, 16)
+                                                        .padding(.vertical, 10)
+                                                        .background(Color(red: 0.6, green: 0.4, blue: 0.9).opacity(0.1))
+                                                        .cornerRadius(20)
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                
+                                // Daily Health Tip
+                                if let tip = currenTip {
+                                    DailyHealthTipView(tip: tip)
+                                }
+                            }
+                            .padding(.top, 10)
+                        }
+                    }
+                    .padding(.top, 20)
+                    .padding(.bottom, 100)
+                    .onChange(of: chatHistory.count) { _, _ in
+                        if let lastMessage = chatHistory.last {
+                            proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                            // TTS removed - mic button is for voice INPUT only
+                        }
+                    }
+                }
+            }
+            
+            // Message Input
+            HStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "paperclip")
+                        .font(.system(size: 18))
+                        .foregroundColor(.gray)
+                    
+                    TextField(isRecording ? "Listening..." : "Ask me anything about your health...", text: $messageText)
+                        .font(.system(size: 15))
+                        .disabled(isRecording)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(25)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(isRecording ? Color.red.opacity(0.5) : Color.clear, lineWidth: 2)
+                )
+                
+                // Mic Button - for voice recording
+                Button(action: {
+                    if isRecording {
+                        // Stop recording
+                        speechRecognizer.stopRecording()
+                        isRecording = false
+                        // Keep transcript in messageText for user to review/send
+                    } else {
+                        // Start recording
+                        speechRecognizer.startRecording()
+                        isRecording = true
+                    }
+                }) {
+                    ZStack {
+                        if isRecording {
+                            Circle()
+                                .fill(Color.red.opacity(0.2))
+                                .frame(width: 40, height: 40)
+                                .scaleEffect(1.2)
+                                .animation(Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isRecording)
+                        }
+                        
+                        Image(systemName: isRecording ? "stop.circle.fill" : "mic.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(isRecording ? .red : .gray)
+                    }
+                }
+                
+                // Send Button - always visible, enabled when there's text
+                Button(action: {
+                    if !messageText.isEmpty {
+                        sendMessage(messageText)
+                        messageText = ""
+                    }
+                }) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(messageText.isEmpty ? .gray.opacity(0.4) : Color(red: 0.6, green: 0.4, blue: 0.9))
+                }
+                .disabled(messageText.isEmpty)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .padding(.bottom, 160) // Extra padding for tab bar and to avoid upload button overlap
+            .background(Color.white)
+        }
+        .background(Color(red: 0.98, green: 0.98, blue: 0.99).ignoresSafeArea())
+        .sheet(isPresented: $showReminderSheet) {
+            ReminderSheet()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DocumentUploaded"))) { _ in
+            sendMessage("Please analyze the recently uploaded document and provide a summary including CRITICAL POINTS, Improvement values, Lab results, and recommended medications.")
+        }
+        .onAppear {
+            // Set random tip on appear
+            currenTip = dailyTips.randomElement()
+        }
+        .onChange(of: speechRecognizer.transcript) { oldVal, newVal in
+            if isRecording || !newVal.isEmpty {
+                messageText = newVal
+            }
+        }
+    }
+    
+    func sendMessage(_ text: String) {
+        isTyping = true
+        errorMessage = nil
+        
+        Task {
+            do {
+                // Call real ChatService
+                let _ = try await ChatService.shared.sendMessageToAI(
+                    message: text,
+                    context: modelContext
+                )
+                
+                await MainActor.run {
+                    isTyping = false
+                }
+            } catch {
+                await MainActor.run {
+                    isTyping = false
+                    errorMessage = error.localizedDescription
+                    print("❌ [ChatbotView] Error: \(error)")
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Daily Health Tip View AND Model
+struct DailyHealthTipView: View {
+    let tip: DailyTip
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+                    .font(.system(size: 20))
+                
+                Text("Daily Health Tip")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color(red: 0.6, green: 0.4, blue: 0.9))
+                
+                Spacer()
+            }
+            
+            Text(tip.title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.black)
+            
+            Text(tip.description)
+                .font(.system(size: 14))
+                .foregroundColor(.gray)
+                .lineSpacing(4)
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .padding(.horizontal)
+    }
+}
+
+struct DailyTip: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+}
+
+// MARK: - Chat Message Model
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    let text: String
+    let isUser: Bool
+    let timestamp = Date()
+}
+
+// MARK: - Chat Bubble Component
+struct ChatBubble: View {
+    let message: ChatMessage
+    
+    var body: some View {
+        HStack {
+            if message.isUser { Spacer() }
+            
+            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
+                Text(message.text)
+                    .font(.system(size: 15))
+                    .foregroundColor(message.isUser ? .white : .black)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        message.isUser ?
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 0.6, green: 0.4, blue: 0.9),
+                                Color(red: 0.5, green: 0.3, blue: 0.8)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ) :
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.white, Color.white]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .cornerRadius(20)
+                    .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                
+                Text(timeString(from: message.timestamp))
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 4)
+            }
+            .frame(maxWidth: 280, alignment: message.isUser ? .trailing : .leading)
+            
+            if !message.isUser { Spacer() }
+        }
+        .padding(.horizontal)
+    }
+    
+    func timeString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - Typing Indicator
+struct TypingIndicator: View {
+    @State private var animationPhase = 0
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(Color.gray.opacity(0.5))
+                    .frame(width: 8, height: 8)
+                    .scaleEffect(animationPhase == index ? 1.2 : 1.0)
+                    .animation(
+                        Animation.easeInOut(duration: 0.6)
+                            .repeatForever()
+                            .delay(Double(index) * 0.2),
+                        value: animationPhase
+                    )
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .onAppear {
+            animationPhase = 1
+        }
+    }
+}
+
+// MARK: - Reminder Sheet
+struct ReminderSheet: View {
+    @Environment(\.presentationMode) var presentationMode
+    @State private var medicationName = ""
+    @State private var reminderTime = Date()
+    @StateObject private var reminderManager = MedicationReminderManager.shared
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Medication Details")) {
+                    TextField("Medication Name", text: $medicationName)
+                    DatePicker("Time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                }
+                
+                Section {
+                    Button(action: {
+                        let calendar = Calendar.current
+                        let hour = calendar.component(.hour, from: reminderTime)
+                        let minute = calendar.component(.minute, from: reminderTime)
+                        
+                        reminderManager.scheduleReminder(
+                            title: "Medication Reminder",
+                            body: "It's time to take \(medicationName)",
+                            hour: hour,
+                            minute: minute
+                        )
+                        
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Set Reminder")
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.white)
+                    }
+                    .listRowBackground(Color.appPurple)
+                }
+            }
+            .navigationTitle("Set Reminder")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - 3. Doctor Connect View
+struct DoctorConnectView: View {
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var demoManager = DemoDataManager.shared
+    @State private var showDemoWarning = false
+    
+    @State private var doctorLink: String?
+    @State private var familyLink: String?
+    @State private var doctorLinkExpiry: Date?
+    @State private var familyLinkExpiry: Date?
+    
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Connect & Share")
+                        .font(.system(size: 32, weight: .bold))
+                    
+                    Text("Share your health data securely with doctors and family")
+                        .font(.system(size: 15))
+                        .foregroundColor(.gray)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.top, 60)
+                
+                // Doctor Connect Section
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Image(systemName: "stethoscope.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(red: 0.3, green: 0.6, blue: 1.0))
+                        
+                        Text("Endocrinologist Connect")
+                            .font(.system(size: 20, weight: .bold))
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    
+                    ShareLinkCard(
+                        title: "Share Glucose Reports",
+                        description: "Generate a secure link for your endocrinologist to view trends",
+                        iconName: "chart.xyaxis.line",
+                        iconColor: Color(red: 0.3, green: 0.6, blue: 1.0),
+                        gradientColors: [Color(red: 0.3, green: 0.6, blue: 1.0), Color(red: 0.2, green: 0.5, blue: 0.9)],
+                        link: $doctorLink,
+                        linkExpiry: $doctorLinkExpiry,
+                        expiryHours: 24,
+                        audience: .doctor
+                    )
+                    
+                    // Active Doctor Connections
+                    if doctorLink != nil {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Active Connections")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                            
+                            ConnectionItem(
+                                name: "Endocrinologist Access",
+                                specialty: "Web Viewer",
+                                connectedDate: "Active Now",
+                                iconColor: Color(red: 0.3, green: 0.6, blue: 1.0)
+                            )
+                        }
+                    }
+                }
+                
+                // Divider
+                Divider()
+                    .padding(.horizontal)
+                
+                // Family Connect Section
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Image(systemName: "person.3.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(red: 1.0, green: 0.4, blue: 0.6))
+                        
+                        Text("Family Health")
+                            .font(.system(size: 20, weight: .bold))
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    
+                    ShareLinkCard(
+                        title: "Share with Family",
+                        description: "Let family members track your health progress",
+                        iconName: "heart.circle.fill",
+                        iconColor: Color(red: 1.0, green: 0.4, blue: 0.6),
+                        gradientColors: [Color(red: 1.0, green: 0.4, blue: 0.6), Color(red: 0.9, green: 0.3, blue: 0.5)],
+                        link: $familyLink,
+                        linkExpiry: $familyLinkExpiry,
+                        expiryHours: 48,
+                        audience: .family
+                    )
+                    
+                    // Active Family Connections
+                    if familyLink != nil {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Active Connections")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                            
+                            ConnectionItem(
+                                name: "Mom",
+                                specialty: "Family Member",
+                                connectedDate: "Connected 5 days ago",
+                                iconColor: Color(red: 1.0, green: 0.4, blue: 0.6)
+                            )
+                            
+                            ConnectionItem(
+                                name: "Dad",
+                                specialty: "Family Member",
+                                connectedDate: "Connected 1 week ago",
+                                iconColor: Color(red: 1.0, green: 0.4, blue: 0.6)
+                            )
+                        }
+                    }
+                }
+                
+                // Info Card
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(Color(red: 0.6, green: 0.4, blue: 0.9))
+                        Text("Security & Privacy")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        InfoRow(icon: "lock.fill", text: "All links are encrypted end-to-end")
+                        InfoRow(icon: "clock.fill", text: "Links expire automatically after set time")
+                        InfoRow(icon: "eye.slash.fill", text: "You control what data is shared")
+                        InfoRow(icon: "xmark.circle.fill", text: "Revoke access anytime")
+                    }
+                }
+                .padding(20)
+                .background(Color(red: 0.6, green: 0.4, blue: 0.9).opacity(0.1))
+                .cornerRadius(16)
+                .padding(.horizontal)
+                .padding(.top, 8)
+            }
+            .padding(.bottom, 100)
+        }
+        .background(Color(red: 0.98, green: 0.98, blue: 0.99))
+    }
+}
+
+// MARK: - Share Link Card Component
+struct ShareLinkCard: View {
+    let title: String
+    let description: String
+    let iconName: String
+    let iconColor: Color
+    let gradientColors: [Color]
+    @Binding var link: String?
+    @Binding var linkExpiry: Date?
+    let expiryHours: Int
+    
+    let audience: ShareAudience
+    
+    @State private var showCopiedAlert = false
+    @State private var timeRemaining: String = ""
+    @State private var isGenerating = false
+    @State private var showPreview = false
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Card Header
+            HStack {
+                Image(systemName: iconName)
+                    .font(.system(size: 20))
+                    .foregroundColor(iconColor)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                    Text(description)
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+            }
+            
+            // Link Display or Generate Button
+            if let link = link, let _ = linkExpiry {
+                VStack(spacing: 12) {
+                    // Link Box
+                    HStack {
+                        Image(systemName: "link")
+                            .foregroundColor(Color.blue)
+                            .font(.system(size: 14))
+                        
+                        Text(link)
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(.blue)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            #if os(iOS)
+                            UIPasteboard.general.string = link
+                            #endif
+                            showCopiedAlert = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                showCopiedAlert = false
+                            }
+                        }) {
+                            Image(systemName: showCopiedAlert ? "checkmark.circle.fill" : "doc.on.doc.fill")
+                                .foregroundColor(showCopiedAlert ? .green : iconColor)
+                        }
+                    }
+                    .padding(12)
+                    .background(Color.blue.opacity(0.08))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                    )
+                    
+                    // Expiry Timer
+                    HStack {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.orange)
+                        Text("Expires in \(timeRemaining)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.orange)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            revokeLink()
+                        }) {
+                            Text("Revoke")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.red)
+                        }
+                    }
+                    .onAppear {
+                        updateTimeRemaining()
+                    }
+                    
+                    // Action Buttons (Share & Preview)
+                    HStack(spacing: 12) {
+                        // Share Button
+                        Button(action: {
+                            shareLink(link)
+                        }) {
+                            HStack {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("Share Link")
+                                    .font(.system(size: 15, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: gradientColors),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                        }
+                        
+                        // Preview Button (Doctor Only)
+                        if audience == .doctor {
+                            Button(action: {
+                                showPreview = true
+                            }) {
+                                Image(systemName: "eye.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(iconColor)
+                                    .frame(width: 44, height: 44)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(iconColor.opacity(0.3), lineWidth: 1)
+                                    )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Generate Link Button
+                Button(action: {
+                    generateLink()
+                }) {
+                    HStack {
+                        if isGenerating {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Image(systemName: "link.badge.plus")
+                            Text("Generate Secure Link")
+                                .font(.system(size: 15, weight: .semibold))
+                        }
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: gradientColors),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                }
+                .disabled(isGenerating)
+            }
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .padding(.horizontal)
+        .sheet(isPresented: $showPreview) {
+            PreviewSheet()
+        }
+    }
+    
+    func generateLink() {
+        isGenerating = true
+        Task {
+            do {
+                let result = try await SharedAccessService.shared.generateLink(for: audience, expiryHours: expiryHours)
+                
+                DispatchQueue.main.async { // Ensure UI update on main thread
+                     self.link = result.url
+                     self.linkExpiry = result.expiry
+                     self.updateTimeRemaining()
+                     self.isGenerating = false
+                }
+            } catch {
+                print("Error generating link: \(error)")
+                isGenerating = false
+            }
+        }
+    }
+    
+    func revokeLink() {
+        // In a real app we'd parse the token from the link, for now assuming just clearing local state
+        // To do this properly, we should store `token` separately or extract it.
+        // Assuming SharedAccessService handles purely backend revocation if we had the ID.
+        // For local-first UI, we just clear it. But we should try to revoke on backend.
+        if let link = link, let token = link.components(separatedBy: "token=").last {
+            Task {
+                await SharedAccessService.shared.revokeLink(token: token)
+            }
+        }
+        self.link = nil
+        self.linkExpiry = nil
+    }
+    
+    func updateTimeRemaining() {
+        guard let expiry = linkExpiry else { return }
+        let remaining = expiry.timeIntervalSinceNow
+        
+        if remaining > 0 {
+            let hours = Int(remaining) / 3600
+            let minutes = (Int(remaining) % 3600) / 60
+            timeRemaining = "\(hours)h \(minutes)m"
+        } else {
+            timeRemaining = "Expired"
+            link = nil
+            linkExpiry = nil
+        }
+    }
+    
+    func shareLink(_ link: String) {
+        #if os(iOS)
+        // Share as a URL object if possible, falling back to string
+        let items: [Any] = [URL(string: link) ?? link, "Join me on MediSync to track my health"]
+        
+        let activityVC = UIActivityViewController(
+            activityItems: items,
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+        #endif
+    }
+}
+
+// MARK: - Connection Item Component
+struct ConnectionItem: View {
+    let name: String
+    let specialty: String
+    let connectedDate: String
+    let iconColor: Color
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(iconColor.opacity(0.2))
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .foregroundColor(iconColor)
+                )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.system(size: 15, weight: .semibold))
+                Text(specialty)
+                    .font(.system(size: 13))
+                    .foregroundColor(.gray)
+                Text(connectedDate)
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray.opacity(0.8))
+            }
+            
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
+                .font(.system(size: 20))
+        }
+        .padding(16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .padding(.horizontal)
+    }
+}
+
+// MARK: - Info Row Component
+struct InfoRow: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundColor(Color(red: 0.6, green: 0.4, blue: 0.9))
+                .frame(width: 20)
+            
+            Text(text)
+                .font(.system(size: 13))
+                .foregroundColor(.gray)
+        }
+    }
+}
+
+// MARK: - 4. Timeline Analysis View
+struct TimelineAnalysisView: View {
+    var body: some View {
+        NavigationView {
+            OrganHealthDetailView()
+                #if os(iOS)
+                .navigationBarHidden(true)
+                #endif
+        }
+    }
+}
+
+// MARK: - Organ Text Timeline Card
+struct OrganTextTimelineCard: View {
+    let organName: String
+    let icon: String
+    let iconColor: Color
+    let status: String
+    let labResults: [LabResultModel]
+    let reports: [MedicalReportModel]
+    
+    @State private var showDetailPopup: Bool = false
+    @State private var graphType: OrganTimelineCard.GraphType = .line
+    @State private var selectedPeriod: OrganTimelineCard.TimePeriod = .month
+    @State private var availablePeriods: Set<OrganTimelineCard.TimePeriod> = [.week, .month, .threeMonths, .sixMonths, .year, .all]
+    
+    // Computed property for status color
+    private var statusColor: Color {
+        switch status.lowercased() {
+        case "normal", "good", "optimal": return .green
+        case "borderline", "warning": return .orange
+        case "abnormal", "high", "low", "critical": return .red
+        default: return .gray
+        }
+    }
+    
+    // Computed property for period-filtered data
+    private var currentPeriodData: [LabResultModel] {
+        labResults.sorted { $0.testDate < $1.testDate }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            // Header
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(iconColor)
+                
+                Text(organName)
+                    .font(.system(size: 18, weight: .bold))
+                
+                Spacer()
+                
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(statusColor)
+                    Text(status)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(statusColor)
+                }
+            }
+            
+            // Time Period Toggle
+            TimePeriodToggle(selectedPeriod: $selectedPeriod, availablePeriods: availablePeriods)
+                .onChange(of: availablePeriods) { _, newPeriods in
+                    // Auto-select the only available period if current selection is invalid
+                    if !newPeriods.contains(selectedPeriod), let first = newPeriods.first {
+                        selectedPeriod = first
+                    }
+                }
+                .onAppear {
+                    // Initial check
+                    if !availablePeriods.contains(selectedPeriod), let first = availablePeriods.first {
+                        selectedPeriod = first
+                    }
+                }
+            
+            // Graph
+            ZStack {
+                if labResults.isEmpty {
+                    Text("No data available")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(height: 180)
+                } else {
+                    OrganHealthChart(
+                        data: currentPeriodData,
+                        graphType: graphType,
+                        color: iconColor,
+                        timePeriod: selectedPeriod
+                    )
+                }
+            }
+            .frame(height: 200) // Slightly taller for axis labels
+            
+            // Timeline Labels (Simplified)
+            HStack {
+                Text("Past")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Spacer()
+                Text("Present")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        .padding(.horizontal)
+        .onTapGesture {
+            showDetailPopup = true
+        }
+        .sheet(isPresented: $showDetailPopup) {
+            OrganDetailPopup(
+                organName: organName,
+                icon: icon,
+                iconColor: iconColor,
+                graphType: graphType,
+                labResults: labResults
+            )
+        }
+        .onAppear {
+            if let bestPeriod = availablePeriods.first {
+                selectedPeriod = bestPeriod
+            }
+        }
+    }
+}
+
+// MARK: - Organ Timeline Card (for TimePeriod support)
+struct OrganTimelineCard {
+    enum TimePeriod: String, CaseIterable {
+        case day = "1D"
+        case week = "1W"
+        case month = "1M"
+        case threeMonths = "3M"
+        case sixMonths = "6M"
+        case year = "1Y"
+        case all = "All"
+    }
+    
+    enum GraphType {
+        case line
+        case lineWithDots
+        case bar
+        case area
+        case wave
+    }
+}
+
+// MARK: - Time Period Toggle
+struct TimePeriodToggle: View {
+    @Binding var selectedPeriod: OrganTimelineCard.TimePeriod
+    var availablePeriods: Set<OrganTimelineCard.TimePeriod>
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(OrganTimelineCard.TimePeriod.allCases, id: \.self) { period in
+                let isEnabled = availablePeriods.contains(period)
+                Button(action: {
+                    if isEnabled {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedPeriod = period
+                        }
+                    }
+                }) {
+                    Text(period.rawValue)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(selectedPeriod == period ? .white : (isEnabled ? .gray : .gray.opacity(0.3)))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            selectedPeriod == period ?
+                            Color.black : Color.gray.opacity(0.1)
+                        )
+                        .cornerRadius(selectedPeriod == period ? 15 : 0)
+                }
+                .disabled(!isEnabled)
+            }
+        }
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(15)
+    }
+}
+
+// MARK: - Organ Health Chart (Swift Charts)
+struct OrganHealthChart: View {
+    let data: [LabResultModel]
+    let graphType: OrganTimelineCard.GraphType
+    let color: Color
+    let timePeriod: OrganTimelineCard.TimePeriod
+    
+    @State private var selectedDate: Date?
+    @State private var selectedValue: Double?
+    
+    var body: some View {
+        Chart {
+            ForEach(data) { item in
+                if graphType == .bar {
+                    BarMark(
+                        x: .value("Date", item.testDate, unit: dateUnit),
+                        y: .value("Value", item.value)
+                    )
+                    .foregroundStyle(color)
+                } else if graphType == .area {
+                   AreaMark(
+                        x: .value("Date", item.testDate, unit: dateUnit),
+                        y: .value("Value", item.value)
+                   )
+                   .foregroundStyle(
+                        LinearGradient(
+                            colors: [color.opacity(0.4), color.opacity(0.05)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                   )
+                   .interpolationMethod(.catmullRom)
+                   
+                   LineMark(
+                        x: .value("Date", item.testDate, unit: dateUnit),
+                        y: .value("Value", item.value)
+                   )
+                   .foregroundStyle(color)
+                   .interpolationMethod(.catmullRom)
+                } else {
+                    // Line or Wave (approximated as line)
+                    LineMark(
+                        x: .value("Date", item.testDate, unit: dateUnit),
+                        y: .value("Value", item.value)
+                    )
+                    .foregroundStyle(color)
+                    .interpolationMethod(graphType == .wave ? .catmullRom : .linear)
+                    
+                    if graphType == .lineWithDots {
+                        PointMark(
+                            x: .value("Date", item.testDate, unit: dateUnit),
+                            y: .value("Value", item.value)
+                        )
+                        .foregroundStyle(color)
+                    }
+                }
+                
+                if let selectedDate, let selectedValue {
+                    RuleMark(x: .value("Selected Date", selectedDate, unit: dateUnit))
+                        .foregroundStyle(Color.gray.opacity(0.5))
+                        .annotation(position: .top) {
+                            VStack(spacing: 2) {
+                                Text("\(selectedValue, specifier: "%.1f")")
+                                    .font(.caption).bold()
+                                Text(selectedDate.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption2).foregroundColor(.gray)
+                            }
+                            .padding(6)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .shadow(radius: 2)
+                        }
+                }
+            }
+        }
+        .chartXAxis {
+            AxisMarks(values: .stride(by: dateUnit, count: 1)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: xAxisFormat, centered: true)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading)
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle().fill(.clear).contentShape(Rectangle())
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                let x = value.location.x
+                                if let date: Date = proxy.value(atX: x) {
+                                    // Find closest data point
+                                    if let closest = data.min(by: { abs($0.testDate.timeIntervalSince(date)) < abs($1.testDate.timeIntervalSince(date)) }) {
+                                        selectedDate = closest.testDate
+                                        selectedValue = closest.value
+                                    }
+                                }
+                            }
+                            .onEnded { _ in
+                                selectedDate = nil
+                                selectedValue = nil
+                            }
+                    )
+            }
+        }
+    }
+    
+    var dateUnit: Calendar.Component {
+        switch timePeriod {
+        case .day: return .hour
+        case .week: return .day
+        case .month: return .day
+        case .threeMonths: return .weekOfMonth
+        case .sixMonths: return .month
+        case .year: return .month
+        case .all: return .month
+        }
+    }
+    
+    var xAxisFormat: Date.FormatStyle {
+        switch timePeriod {
+        case .day: return .dateTime.hour()
+        case .week: return .dateTime.weekday(.abbreviated)
+        case .month: return .dateTime.day()
+        case .threeMonths: return .dateTime.day()
+        case .sixMonths: return .dateTime.month(.abbreviated)
+        case .year: return .dateTime.month(.abbreviated)
+        case .all: return .dateTime.month(.abbreviated)
+        }
+    }
+}
+
+// MARK: - Timeline Item Card
+struct TimelineItemCard: View {
+    let result: LabResultModel
+    let backgroundColor: Color
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(result.testDate.formatted(date: .abbreviated, time: .omitted))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.black.opacity(0.7))
+                
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(result.value.formatted())
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.black)
+                    Text(result.unit)
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
+                Text(result.testName)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            // Status Indicator
+            // Status Indicator
+            let status = calculateParameterStatus(
+                value: result.value,
+                normalRange: result.normalRange,
+                refMin: nil,
+                refMax: nil
+            )
+            
+            let statusColor: Color = {
+                let s = status.lowercased()
+                if s.contains("normal") { return .green }
+                if s.contains("unknown") { return .gray }
+                if s.contains("borderline") { return .orange }
+                return .red
+            }()
+            
+            Text(status)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(statusColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    statusColor.opacity(0.1)
+                )
+                .cornerRadius(8)
+        }
+        .padding(18)
+        .background(backgroundColor.opacity(0.3))
+        .cornerRadius(15)
+    }
+}
+
+// MARK: - Organ Detail Popup
+struct OrganDetailPopup: View {
+    @Environment(\.presentationMode) var presentationMode
+    let organName: String
+    let icon: String
+    let iconColor: Color
+    let graphType: OrganTimelineCard.GraphType
+    let labResults: [LabResultModel]
+    
+    var body: some View {
+        NavigationView {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    HStack {
+                        Image(systemName: icon)
+                            .font(.system(size: 24))
+                            .foregroundColor(iconColor)
+                        
+                        Text(organName)
+                            .font(.system(size: 24, weight: .bold))
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.gray.opacity(0.3))
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 20)
+                    
+                    // Current Value Display
+                    if let latest = labResults.sorted(by: { $0.testDate < $1.testDate }).last {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Latest Reading")
+                                .font(.system(size: 14))
+                                .foregroundColor(.gray)
+                            
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                Text(latest.value.formatted())
+                                    .font(.system(size: 48, weight: .bold))
+                                    .foregroundColor(iconColor)
+                                Text(latest.unit)
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.gray)
+                            }
+                            Text(latest.testName)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // Timeline Section
+                    VStack(alignment: .leading, spacing: 15) {
+                        HStack {
+                            Text("History")
+                                .font(.system(size: 18, weight: .bold))
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        
+                        ForEach(Array(labResults.sorted(by: { $0.testDate > $1.testDate }).enumerated()), id: \.element.id) { index, result in
+                            TimelineItemCard(
+                                result: result,
+                                backgroundColor: cardColor(for: index)
+                            )
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+                .padding(.bottom, 40)
+            }
+            #if os(iOS)
+            .navigationBarHidden(true)
+            #endif
+        }
+    }
+    
+    func cardColor(for index: Int) -> Color {
+        let colors: [Color] = [
+            Color(red: 1.0, green: 0.8, blue: 0.9),  // Pink
+            Color(red: 0.8, green: 0.95, blue: 0.9), // Green
+            Color(red: 1.0, green: 0.95, blue: 0.85), // Beige
+            Color(red: 0.9, green: 0.9, blue: 1.0),  // Light Purple
+            Color(red: 1.0, green: 0.9, blue: 0.8)   // Peach
+        ]
+        return colors[index % colors.count]
+    }
+}
+
+
+// MARK: - Brain Multi-Line Graph
+struct BrainMultiLineGraph: View {
+    let color: Color
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            
+            ZStack {
+                // Indian Average Reference Line (87% cognitive baseline)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.63))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.63))
+                }
+                .stroke(Color.gray.opacity(0.4), style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [5, 3]))
+                
+                // Line 1 (User Data - Primary Metric)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.6))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.55))
+                    path.addLine(to: CGPoint(x: width * 0.5, y: height * 0.5))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.48))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.45))
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                
+                // Line 2 (User Data - Secondary Metric)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.7))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.68))
+                    path.addLine(to: CGPoint(x: width * 0.5, y: height * 0.65))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.63))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.6))
+                }
+                .stroke(color.opacity(0.4), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round, dash: [5, 3]))
+            }
+        }
+    }
+}
+
+// MARK: - Eye Dual-Axis Graph
+struct EyeDualAxisGraph: View {
+    let color: Color
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            
+            ZStack {
+                // Indian Average Reference Lines
+                // Visual Acuity Baseline (20/20)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.50))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.50))
+                }
+                .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 3]))
+                
+                // Pressure Baseline (14 mmHg)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.64))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.64))
+                }
+                .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 3]))
+                
+                // Line 1 (User Data - Visual Acuity)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.5))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.5))
+                    path.addLine(to: CGPoint(x: width * 0.5, y: height * 0.48))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.5))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.49))
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                
+                // Line 2 (User Data - Pressure)
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.65))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.63))
+                    path.addLine(to: CGPoint(x: width * 0.5, y: height * 0.64))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.62))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.63))
+                }
+                .stroke(Color(red: 0.3, green: 0.7, blue: 0.4), style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+            }
+        }
+    }
+}
+
+
+
+
+
+
+// MARK: - Custom Tab Bar
+enum Tab: String, CaseIterable {
+    case home = "house"
+    case grid = "message.fill"
+    case stats = "chart.bar"
+    case doctor = "stethoscope"
+}
+
+struct CustomTabBar: View {
+    @Binding var selectedTab: Tab
+    
+    var body: some View {
+        HStack {
+            ForEach(Tab.allCases, id: \.self) { tab in
+                Spacer()
+                Button(action: {
+                    withAnimation(.spring()) {
+                        selectedTab = tab
+                    }
+                }) {
+                    ZStack {
+                        if selectedTab == tab {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 45, height: 45)
+                                .matchedGeometryEffect(id: "TabCircle", in: namespace)
+                        }
+                        
+                        Image(systemName: tab.rawValue)
+                            .font(.system(size: 20))
+                            .foregroundColor(selectedTab == tab ? .black : .gray)
+                    }
+                }
+                Spacer()
+            }
+        }
+        .frame(height: 70)
+        .background(Color.tabBarBlack)
+        .cornerRadius(35)
+        .padding(.horizontal, 25)
+        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+    }
+    
+    @Namespace private var namespace
+}
+
+// MARK: - Preview
+struct RootContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        RootContentView()
+    }
+}
+
+// MARK: - NEW VIEWS APPENDED
+
+struct ReportDetailView: View {
+    let report: MedicalReportModel
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Metadata Section
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(report.title)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        
+                        HStack {
+                            Image(systemName: "calendar")
+                                .foregroundColor(.gray)
+                            Text(report.uploadDate.formatted(date: .long, time: .shortened))
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .foregroundColor(.gray)
+                            Text(report.reportType)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    
+                    Divider()
+                    
+                    // Content Section
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Report Content")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                        
+                        if !report.extractedText.isEmpty {
+                            Text(report.extractedText)
+                                .font(.body)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(8)
+                                .shadow(radius: 1)
+                        } else {
+                            Text("No text content extracted available.")
+                                .italic()
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    if !report.aiInsights.isEmpty {
+                        Divider()
+                        
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("AI Analysis")
+                                .font(.headline)
+                                .foregroundColor(.purple)
+                                .padding(.bottom, 5)
+                            
+                            Text(report.aiInsights)
+                                .font(.body)
+                                .padding()
+                                .background(Color.purple.opacity(0.05))
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+            .navigationBarTitle("Report Details", displayMode: .inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct SearchView: View {
+    @Binding var searchText: String
+    var labResults: [LabResultModel]
+    var medications: [MedicationModel]
+    @Binding var selectedTab: Tab
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \MedicalReportModel.uploadDate, order: .reverse) private var reports: [MedicalReportModel]
+    @Environment(\.presentationMode) var presentationMode
+    
+    // State for local detail views
+    @State private var selectedMed: MedicationModel?
+    @State private var selectedLab: LabResultModel?
+    @State private var selectedReport: MedicalReportModel?
+    
+    // Computed results
+    var filteredMedications: [MedicationModel] {
+        if searchText.isEmpty { return [] }
+        return medications.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    var filteredLabResults: [LabResultModel] {
+        if searchText.isEmpty { return [] }
+        return labResults.filter {
+            $0.testName.localizedCaseInsensitiveContains(searchText) ||
+            $0.category.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+    
+    var filteredReports: [MedicalReportModel] {
+        if searchText.isEmpty { return [] }
+        let query = searchText.lowercased()
+        return reports.filter { report in
+            // Search by title
+            if report.title.localizedCaseInsensitiveContains(searchText) { return true }
+            // Search by report type/organ
+            if report.reportType.localizedCaseInsensitiveContains(searchText) { return true }
+            if report.organ.localizedCaseInsensitiveContains(searchText) { return true }
+            // Search by various date formats
+            let dateFormatters: [DateFormatter] = {
+                let f1 = DateFormatter(); f1.dateFormat = "d MMM" // "15 Jan"
+                let f2 = DateFormatter(); f2.dateFormat = "MMMM" // "January"
+                let f3 = DateFormatter(); f3.dateFormat = "yyyy" // "2024"
+                let f4 = DateFormatter(); f4.dateStyle = .long // "January 15, 2024"
+                let f5 = DateFormatter(); f5.dateFormat = "dd/MM/yyyy" // "15/01/2024"
+                return [f1, f2, f3, f4, f5]
+            }()
+            for formatter in dateFormatters {
+                if formatter.string(from: report.displayDate).lowercased().contains(query) {
+                    return true
+                }
+            }
+            return false
+        }
+    }
+    
+    var filteredPages: [(name: String, tab: Tab)] {
+        let pages: [(String, Tab)] = [
+            ("Dashboard", .home),
+            ("Chatbot Assistant", .grid),
+            ("Health Timeline", .stats),
+            ("Doctor Connect", .doctor)
+        ]
+        if searchText.isEmpty { return [] }
+        return pages.filter { $0.0.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    var filteredOrgans: [String] {
+        let organs = ["Heart", "Lungs", "Kidneys", "Liver", "Eyes", "Ears", "Brain", "Bones"]
+        if searchText.isEmpty { return [] }
+        return organs.filter { $0.localizedCaseInsensitiveContains(searchText) }
+    }
+    
+    var body: some View {
+        NavigationView {
+            List {
+                if searchText.isEmpty {
+                    Section(header: Text("Suggestions")) {
+                        Button(action: { searchText = "Heart" }) {
+                            Label("Heart Health", systemImage: "heart.fill").foregroundColor(.red)
+                        }
+                        Button(action: { searchText = "Medications" }) {
+                            Label("All Medications", systemImage: "pills.fill").foregroundColor(.purple)
+                        }
+                        Button(action: { searchText = "Chatbot" }) {
+                            Label("Ask AI Assistant", systemImage: "message.fill").foregroundColor(.blue)
+                        }
+                        Button(action: { searchText = "Liver" }) {
+                            Label("Liver Profile", systemImage: "cross.case.fill").foregroundColor(.orange)
+                        }
+                    }
+                } else {
+                    // Pages Section
+                    if !filteredPages.isEmpty {
+                        Section(header: Text("App Sections")) {
+                            ForEach(filteredPages, id: \.name) { page in
+                                Button(action: {
+                                    selectedTab = page.tab
+                                    presentationMode.wrappedValue.dismiss()
+                                }) {
+                                    Label(page.name, systemImage: "arrow.right.circle")
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Organs Section
+                    if !filteredOrgans.isEmpty {
+                        Section(header: Text("Organs")) {
+                            ForEach(filteredOrgans, id: \.self) { organ in
+                                Button(action: {
+                                    // Could filter labs by organ name
+                                    searchText = organ
+                                }) {
+                                    Label(organ, systemImage: "heart.text.square")
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Medications Section
+                    if !filteredMedications.isEmpty {
+                        Section(header: Text("Medications")) {
+                            ForEach(filteredMedications) { med in
+                                Button(action: { selectedMed = med }) {
+                                    VStack(alignment: .leading) {
+                                        Text(med.name).font(.headline)
+                                        Text(med.dosage).font(.caption).foregroundColor(.gray)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Lab Results Section
+                    if !filteredLabResults.isEmpty {
+                        Section(header: Text("Lab Results")) {
+                            ForEach(filteredLabResults) { lab in
+                                Button(action: { selectedLab = lab }) {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(lab.testName).font(.body)
+                                            Text(lab.category).font(.caption).foregroundColor(.gray)
+                                        }
+                                        Spacer()
+                                        Text("\(String(format: "%.1f", lab.value)) \(lab.unit)")
+                                            .foregroundColor(lab.status == "Normal" || lab.status == "Optimal" ? .green : .red)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Reports Section
+                    if !filteredReports.isEmpty {
+                        Section(header: Text("Medical Reports")) {
+                            ForEach(filteredReports) { report in
+                                Button(action: { selectedReport = report }) {
+                                    VStack(alignment: .leading) {
+                                        Text(report.title).font(.headline)
+                                        Text(report.uploadDate.formatted(date: .abbreviated, time: .shortened))
+                                            .font(.caption).foregroundColor(.gray)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if filteredMedications.isEmpty && filteredLabResults.isEmpty && filteredReports.isEmpty && filteredPages.isEmpty && filteredOrgans.isEmpty {
+                        ContentUnavailableView.search(text: searchText)
+                    }
+                }
+            }
+            .navigationTitle("Search")
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search medications, labs, dates...")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+            // Detail Sheets within Search
+            .sheet(item: $selectedMed) { med in
+                MedicationDetailView(medication: med)
+            }
+            .sheet(item: $selectedLab) { lab in
+                ParameterDetailView(
+                    testName: lab.testName,
+                    latestValue: lab.value,
+                    unit: lab.unit,
+                    status: lab.status,
+                    normalRange: lab.normalRange,
+                    color: Color.medicalPurpleLight
+                )
+            }
+            .sheet(item: $selectedReport) { report in
+                ReportDetailView(report: report)
+            }
+        }
+    }
+}
+
+struct AddMedicationView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.modelContext) private var modelContext
+    
+    @State private var name = ""
+    @State private var dosage = ""
+    @State private var frequency = ""
+    @State private var instructions = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Details")) {
+                    TextField("Medication Name", text: $name)
+                    TextField("Dosage (e.g., 500mg)", text: $dosage)
+                    TextField("Frequency (e.g., Twice daily)", text: $frequency)
+                    TextField("Instructions (Optional)", text: $instructions)
+                }
+            }
+            .navigationTitle("Add Medication")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveMedication()
+                    }
+                    .disabled(name.isEmpty || dosage.isEmpty || frequency.isEmpty)
+                }
+            }
+        }
+    }
+    
+    func saveMedication() {
+        let newMed = MedicationModel(
+            name: name,
+            dosage: dosage,
+            frequency: frequency,
+            instructions: instructions,
+            startDate: Date(),
+            prescribedBy: "User Added",  // CRITICAL: Required for getUploadedMedications filter
+            isActive: true,
+            source: "Self-reported"
+        )
+        modelContext.insert(newMed)
+        
+        // Explicitly save to persist
+        do {
+            try modelContext.save()
+            print("✅ [AddMedication] Saved: \(name) with prescribedBy='User Added'")
+        } catch {
+            print("❌ [AddMedication] Save failed: \(error)")
+        }
+        
+        presentationMode.wrappedValue.dismiss()
+    }
+}
+
+// MARK: - Inlined Settings & Legal Views
+struct SettingsView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.modelContext) private var modelContext
+    @Query private var userProfiles: [UserProfileModel]
+    @ObservedObject private var auth = FirebaseAuthService.shared
+    
+    @State private var showDeleteConfirmation = false
+    
+    var body: some View {
+        NavigationView {
+            List {
+                // Section 1: Profile
+                Section(header: Text("Profile")) {
+                    if let profile = userProfiles.first {
+                        HStack {
+                            if let photoData = profile.profilePhotoData, let uiImage = UIImage(data: photoData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .frame(width: 60, height: 60)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            VStack(alignment: .leading) {
+                                Text(profile.name)
+                                    .font(.headline)
+                                Text(auth.currentUser?.email ?? "Guest User")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    } else {
+                        Text("No Profile Found")
+                    }
+                }
+                
+                // Section 2: About
+                Section(header: Text("About")) {
+                    NavigationLink(destination: LegalView(title: "Privacy Policy")) {
+                        Label("Privacy Policy", systemImage: "hand.raised.fill")
+                    }
+                    NavigationLink(destination: LegalView(title: "Terms of Service")) {
+                        Label("Terms of Service", systemImage: "doc.text.fill")
+                    }
+                    NavigationLink(destination: LegalView(title: "Medical Disclaimer")) {
+                        Label("Medical Disclaimer", systemImage: "exclamationmark.triangle.fill")
+                    }
+                    HStack {
+                        Label("Version", systemImage: "info.circle")
+                        Spacer()
+                        Text("1.0.0 (1)")
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Section 3: Notifications
+                Section(header: Text("Notifications")) {
+                    Toggle(isOn: .constant(true)) {
+                        Label("Medication Reminders", systemImage: "pills.fill")
+                    }
+                    Toggle(isOn: .constant(true)) {
+                        Label("Health Alerts", systemImage: "heart.text.square.fill")
+                    }
+                    Toggle(isOn: .constant(false)) {
+                        Label("Weekly Summary", systemImage: "chart.bar.doc.horizontal")
+                    }
+                }
+                
+                // Section 4: Data Management
+                Section(header: Text("Data")) {
+                    Button(action: {
+                        // Placeholder for export functionality
+                    }) {
+                        Label("Export Health Data", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button(action: {
+                        // Placeholder for clearing local cache
+                    }) {
+                        Label("Clear Cache", systemImage: "trash.circle")
+                    }
+                    .foregroundColor(.orange)
+                }
+                
+                // Section 5: Support
+                Section(header: Text("Support")) {
+                    Link(destination: URL(string: "mailto:support@diabo.app")!) {
+                        Label("Contact Support", systemImage: "envelope.fill")
+                    }
+                    
+                    Link(destination: URL(string: "https://diabo.app/faq")!) {
+                        Label("FAQ & Help Center", systemImage: "questionmark.circle.fill")
+                    }
+                    
+                    Button(action: {
+                        // Rate the app
+                    }) {
+                        Label("Rate Diabo on App Store", systemImage: "star.fill")
+                    }
+                }
+                
+                // Section 3: Danger Zone
+                Section {
+                    Button(action: {
+                        try? auth.signOut()
+                        AppManager.shared.logout()
+                    }) {
+                        Label("Log Out", systemImage: "arrow.right.square")
+                            .foregroundColor(.red)
+                    }
+                    
+                    Button(action: {
+                        showDeleteConfirmation = true
+                    }) {
+                        Label("Delete Account", systemImage: "trash")
+                            .foregroundColor(.red)
+                    }
+                } header: {
+                    Text("Account")
+                } footer: {
+                    Text("Deleting your account will permanently remove all your data from our servers. This action cannot be undone.")
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+            .alert(isPresented: $showDeleteConfirmation) {
+                Alert(
+                    title: Text("Delete Account?"),
+                    message: Text("Are you sure you want to delete your account? All data will be lost."),
+                    primaryButton: .destructive(Text("Delete")) {
+                        deleteAccount()
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
+        }
+    }
+    
+    private func deleteAccount() {
+        // 1. Clear SwiftData
+        try? modelContext.delete(model: UserProfileModel.self)
+        try? modelContext.delete(model: MedicalReportModel.self)
+        try? modelContext.delete(model: LabResultModel.self)
+        try? modelContext.delete(model: MedicationModel.self)
+        
+        // 2. Sign out Auth
+        try? auth.signOut()
+        
+        // 3. Reset App State
+        AppManager.shared.resetApp()
+    }
+}
+
+struct LegalView: View {
+    let title: String
+    var body: some View {
+        ScrollView {
+            Text("Placeholder for \(title)")
+                .padding()
+            Text("This is where your legal text goes. For App Store submission, you MUST replace this with your actual \(title).")
+                .foregroundColor(.gray)
+                .padding()
+        }
+        .navigationTitle(title)
+    }
+}
+
+struct GoalPill: View {
+    let title: String
+    let value: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .fontWeight(.bold)
+                Text(value)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.black)
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+}
+
+// MARK: - Speech Recognizer & Text-to-Speech
+class SpeechRecognizer: ObservableObject {
+    @Published var transcript = ""
+    @Published var isRecording = false
+    @Published var permissionGranted = false
+    @Published var errorMessage: String?
+    
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private let audioEngine = AVAudioEngine()
+    private let synthesizer = AVSpeechSynthesizer()
+    private var hasInstalledTap = false
+    
+    init() {
+        // Don't request permission on init - do it lazily when user taps mic
+    }
+    
+    func requestPermission(completion: @escaping (Bool) -> Void) {
+        SFSpeechRecognizer.requestAuthorization { authStatus in
+            DispatchQueue.main.async {
+                switch authStatus {
+                case .authorized:
+                    self.permissionGranted = true
+                    completion(true)
+                case .denied, .restricted, .notDetermined:
+                    self.permissionGranted = false
+                    self.errorMessage = "Speech recognition permission denied"
+                    completion(false)
+                @unknown default:
+                    self.permissionGranted = false
+                    completion(false)
+                }
+            }
+        }
+    }
+    
+    func startRecording() {
+        errorMessage = nil
+        if !permissionGranted {
+            requestPermission { [weak self] granted in
+                if granted {
+                    self?.beginRecordingSession()
+                } else {
+                    self?.errorMessage = "Please enable speech recognition in Settings"
+                }
+            }
+        } else {
+            beginRecordingSession()
+        }
+    }
+    
+    private func beginRecordingSession() {
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+        
+        if recognitionTask != nil {
+            recognitionTask?.cancel()
+            recognitionTask = nil
+        }
+        
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        
+        let inputNode = audioEngine.inputNode
+        if hasInstalledTap {
+            inputNode.removeTap(onBus: 0)
+            hasInstalledTap = false
+        }
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker])
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("Failed to setup audio session: \(error)")
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to setup audio"
+            }
+            return
+        }
+        
+        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        
+        guard let recognitionRequest = recognitionRequest else {
+            print("Unable to create recognition request")
+            DispatchQueue.main.async {
+                self.errorMessage = "Unable to create recognition request"
+            }
+            return
+        }
+        
+        recognitionRequest.shouldReportPartialResults = true
+        
+        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+            guard let self = self else { return }
+            var isFinal = false
+            if let result = result {
+                DispatchQueue.main.async {
+                    self.transcript = result.bestTranscription.formattedString
+                }
+                isFinal = result.isFinal
+            }
+            if error != nil || isFinal {
+                self.cleanupRecording()
+            }
+        }
+        
+        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        guard recordingFormat.sampleRate > 0 else {
+            print("Invalid audio format")
+            DispatchQueue.main.async {
+                self.errorMessage = "Microphone not available"
+            }
+            return
+        }
+        
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
+            self?.recognitionRequest?.append(buffer)
+        }
+        hasInstalledTap = true
+        
+        audioEngine.prepare()
+        
+        do {
+            try audioEngine.start()
+            DispatchQueue.main.async {
+                self.transcript = ""
+                self.isRecording = true
+            }
+        } catch {
+            print("audioEngine couldn't start: \(error)")
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to start recording"
+            }
+            cleanupRecording()
+        }
+    }
+    
+    func stopRecording() {
+        cleanupRecording()
+    }
+    
+    private func cleanupRecording() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        recognitionRequest?.endAudio()
+        
+        let inputNode = audioEngine.inputNode
+        if hasInstalledTap {
+            inputNode.removeTap(onBus: 0)
+            hasInstalledTap = false
+        }
+        
+        recognitionRequest = nil
+        recognitionTask = nil
+        
+        DispatchQueue.main.async {
+            self.isRecording = false
+        }
+    }
+    
+    func speak(_ text: String) {
+        guard !isRecording else { return }
+        
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utterance.rate = 0.45
+        utterance.pitchMultiplier = 0.9
+        
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setCategory(.playback, mode: .default)
+        try? audioSession.setActive(true)
+        
+        synthesizer.speak(utterance)
+    }
+}

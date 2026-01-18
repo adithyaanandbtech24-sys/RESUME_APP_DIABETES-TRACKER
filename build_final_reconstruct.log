@@ -1,0 +1,508 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild clean build -project Diabo/Diabo.xcodeproj -scheme Diabo -configuration Debug -sdk iphonesimulator -destination id=BFA6FFB9-B2B2-4BFE-9D82-42127CBCF350
+
+Build settings from command line:
+    SDKROOT = iphonesimulator26.1
+
+2026-01-11 10:54:23.896 xcodebuild[57216:19940554] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+** CLEAN SUCCEEDED **
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'Diabo' in project 'Diabo' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: fe1d049a9972c64f76eb155fafb3d97d
+Build description path: /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/XCBuildData/fe1d049a9972c64f76eb155fafb3d97d.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk /Users/adithyaanand/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-3885c01c3e6b6a337905948deab2002e90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-3885c01c3e6b6a337905948deab2002e90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator
+
+CreateBuildDirectory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    builtin-create-build-directory /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo-9df63efc9cf478357eb89ee6f4613a2e-VFS-iphonesimulator/all-product-headers.yaml
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo.xcodeproj
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo-9df63efc9cf478357eb89ee6f4613a2e-VFS-iphonesimulator/all-product-headers.yaml
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/empty-Diabo.plist (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/empty-Diabo.plist
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.LinkFileList (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.LinkFileList
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_const_extract_protocols.json (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftConstValuesFileList (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-OutputFileMap.json (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyStaticMetadataFileList (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyMetadataFileList (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-project-headers.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-project-headers.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-own-target-headers.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-generated-files.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-generated-files.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-target-headers.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-non-framework-target-headers.hmap (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibPath-normal-arm64.txt (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibInstallName-normal-arm64.txt (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibInstallName-normal-arm64.txt
+
+MkDir /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /bin/mkdir -p /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app
+
+WriteAuxiliaryFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/Entitlements-Simulated.plist (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    write-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/Entitlements-Simulated.plist
+
+ProcessProductPackaging "" /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "Q9ZHJ7B6ZB.com.paid.Diabo";
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent
+
+ProcessProductPackagingDER /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent.der (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /usr/bin/derq query -f xml -i /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent.der --raw
+
+Ld /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/__preview.dylib normal (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -O0 -L/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -install_name @rpath/Diabo.debug.dylib -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_dependency_info.dat -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent.der -Xlinker -no_adhoc_codesign -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/__preview.dylib
+
+GenerateAssetSymbols /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets --compile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app --output-format human-readable-text --notices --warnings --export-dependency-info /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_dependencies --output-partial-info-plist /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 17.0 --platform iphonesimulator --bundle-identifier com.paid.Diabo --generate-swift-asset-symbols /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+MkDir /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/thinned (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /bin/mkdir -p /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/thinned
+
+MkDir /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/unthinned (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /bin/mkdir -p /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/unthinned
+
+CompileAssetCatalogVariant thinned /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets --compile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPad15,7 --filter-for-device-os-version 26.1 --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 17.0 --platform iphonesimulator
+/* com.apple.actool.compilation-results */
+/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist_thinned
+/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/thinned/Assets.car
+
+
+SwiftDriver Diabo normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Diabo -Onone -enforce-exclusivity\=checked @/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-3885c01c3e6b6a337905948deab2002e90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_const_extract_protocols.json -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-generated-files.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-own-target-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-target-headers.hmap -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-project-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources-normal/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-Swift.h -working-directory /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ UserRoleService.swift,\ ReportService.swift,\ OCRService.swift,\ ColorExtensions.swift,\ MLService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UserRoleService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ReportService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/OCRService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ColorExtensions.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MLService.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UserRoleService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ReportService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/OCRService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ColorExtensions.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MLService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Diabo (in target 'Diabo' from project 'Diabo')
+
+EmitSwiftModule normal arm64 (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ PrescriptionViewModel.swift,\ MedicalDataParser.swift,\ EmptyStateView.swift,\ HealthKitManager.swift,\ DashboardViewModel.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PrescriptionViewModel.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalDataParser.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/EmptyStateView.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/HealthKitManager.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DashboardViewModel.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PrescriptionViewModel.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalDataParser.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+/Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalDataParser.swift:522:17: warning: variable 'bg' was never mutated; consider changing to 'let' constant
+            var bg = String(text[range]).uppercased().replacingOccurrences(of: " ", with: "")
+            ~~~ ^
+            let
+/Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalDataParser.swift:774:21: warning: variable 'matchedAlias' was written to, but never read
+                var matchedAlias = ""
+                    ^
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/EmptyStateView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/HealthKitManager.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DashboardViewModel.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ ParameterComponents.swift,\ UploadDocumentViewModel.swift,\ AuthenticationView.swift,\ UploadDocumentView.swift,\ ReportAnalyzerService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ParameterComponents.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UploadDocumentViewModel.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AuthenticationView.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UploadDocumentView.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ReportAnalyzerService.swift (in target 'Diabo' from project 'Diabo')
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ParameterComponents.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UploadDocumentViewModel.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AuthenticationView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/UploadDocumentView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ReportAnalyzerService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ AppState.swift,\ TimelineAnalysisEngine.swift,\ MedicationManager.swift,\ MedicalStandardProvider.swift,\ FirebaseMock.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AppState.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/TimelineAnalysisEngine.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicationManager.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalStandardProvider.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/FirebaseMock.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AppState.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/TimelineAnalysisEngine.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicationManager.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+/Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicationManager.swift:157:17: warning: variable 'newMed' was never mutated; consider removing 'var' to make it constant
+        for var newMed in newMedications {
+            ~~~~^
+            
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicalStandardProvider.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/FirebaseMock.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ MedicationAdherenceEngine.swift,\ HealthDataViewModel.swift,\ AppManager.swift,\ TimelineViewModel.swift,\ ChatService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicationAdherenceEngine.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/HealthDataViewModel.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AppManager.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/TimelineViewModel.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ChatService.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/MedicationAdherenceEngine.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/HealthDataViewModel.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AppManager.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/TimelineViewModel.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ChatService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ AccountManagementService.swift,\ CloudKitManager.swift,\ DocumentPipeline.swift,\ DashboardDataEngine.swift,\ DemoDataManager.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AccountManagementService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/CloudKitManager.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DocumentPipeline.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DashboardDataEngine.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DemoDataManager.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/AccountManagementService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/CloudKitManager.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DocumentPipeline.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DashboardDataEngine.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DemoDataManager.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 Compiling\ GuestLimitModal.swift,\ OrganHealthService.swift,\ GraphRAGEngine.swift,\ SwiftDataModels.swift,\ DiaboApp.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/GuestLimitModal.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/OrganHealthService.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/GraphRAGEngine.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/SwiftDataModels.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DiaboApp.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/GuestLimitModal.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/OrganHealthService.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/GraphRAGEngine.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/SwiftDataModels.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/DiaboApp.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for Diabo (in target 'Diabo' from project 'Diabo')
+
+SwiftDriverJobDiscovery normal arm64 Compiling MedicationAdherenceEngine.swift, HealthDataViewModel.swift, AppManager.swift, TimelineViewModel.swift, ChatService.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriver\ Compilation\ Requirements Diabo normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Diabo -Onone -enforce-exclusivity\=checked @/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-3885c01c3e6b6a337905948deab2002e90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_const_extract_protocols.json -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-generated-files.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-own-target-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-target-headers.hmap -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-project-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources-normal/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-Swift.h -working-directory /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ SwiftDataExtensions.swift,\ ContentView.swift,\ PostLoginSetupView.swift,\ PrologueView.swift,\ GeneratedAssetSymbols.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/SwiftDataExtensions.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ContentView.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PostLoginSetupView.swift /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PrologueView.swift /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Diabo' from project 'Diabo')
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/SwiftDataExtensions.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/ContentView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PostLoginSetupView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/PrologueView.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftCompile normal arm64 /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+
+SwiftMergeGeneratedHeaders /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/Diabo-Swift.h /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-Swift.h (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-swiftHeaderTool -arch arm64 /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-Swift.h -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/Diabo-Swift.h
+
+SwiftDriverJobDiscovery normal arm64 Compiling AccountManagementService.swift, CloudKitManager.swift, DocumentPipeline.swift, DashboardDataEngine.swift, DemoDataManager.swift (in target 'Diabo' from project 'Diabo')
+
+Copy /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.swiftdoc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftdoc (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftdoc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.abi.json /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.abi.json (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.abi.json /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftsourceinfo (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftsourceinfo /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Compiling AppState.swift, TimelineAnalysisEngine.swift, MedicationManager.swift, MedicalStandardProvider.swift, FirebaseMock.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriverJobDiscovery normal arm64 Compiling UserRoleService.swift, ReportService.swift, OCRService.swift, ColorExtensions.swift, MLService.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriverJobDiscovery normal arm64 Compiling PrescriptionViewModel.swift, MedicalDataParser.swift, EmptyStateView.swift, HealthKitManager.swift, DashboardViewModel.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriverJobDiscovery normal arm64 Compiling GuestLimitModal.swift, OrganHealthService.swift, GraphRAGEngine.swift, SwiftDataModels.swift, DiaboApp.swift (in target 'Diabo' from project 'Diabo')
+
+LinkAssetCatalog /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo/Diabo/Assets.xcassets (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-linkAssetCatalog --thinned /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/thinned --thinned-dependencies /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist_unthinned --output /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app --plist-output /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Assets.car (in target 'Diabo' from project 'Diabo')
+
+ProcessInfoPlistFile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Info.plist /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/empty-Diabo.plist (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-infoPlistUtility /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/empty-Diabo.plist -producttype com.apple.product-type.application -genpkginfo /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/assetcatalog_generated_info.plist -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Info.plist
+
+SwiftDriverJobDiscovery normal arm64 Compiling ParameterComponents.swift, UploadDocumentViewModel.swift, AuthenticationView.swift, UploadDocumentView.swift, ReportAnalyzerService.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SwiftDataExtensions.swift, ContentView.swift, PostLoginSetupView.swift, PrologueView.swift, GeneratedAssetSymbols.swift (in target 'Diabo' from project 'Diabo')
+
+SwiftDriver\ Compilation Diabo normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Diabo -Onone -enforce-exclusivity\=checked @/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.1-23B77-3885c01c3e6b6a337905948deab2002e90cf18a4295e390e64c810bc6bd7acbc.sdkstatcache -output-file-map /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_const_extract_protocols.json -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-generated-files.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-own-target-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-all-target-headers.hmap -Xcc -iquote -Xcc /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-project-headers.hmap -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources-normal/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources/arm64 -Xcc -I/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-Swift.h -working-directory /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib normal (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -O0 -L/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -filelist /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.LinkFileList -install_name @rpath/Diabo.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -dead_strip -Xlinker -object_path_lto -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.swiftmodule @/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo-linker-args.resp -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-ExecutorLinkFileList-normal-arm64.txt (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    construct-stub-executor-link-file-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'Diabo' from project 'Diabo')
+
+Ld /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo normal (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk -O0 -L/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -F/Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo-ExecutorLinkFileList-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.app-Simulated.xcent.der /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib -Xlinker -no_adhoc_codesign -o /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo
+
+CopySwiftLibs /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib --scan-folder /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Frameworks --scan-folder /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/PlugIns --scan-folder /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/SystemExtensions --scan-folder /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.2.54.0.UQGNkn/Metal.xctoolchain --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.2.54.0.UQGNkn/Metal.xctoolchain --module-name Diabo --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.1.sdk --xcode-version 17B100 --platform-family iOS --deployment-target 17.0 --bundle-identifier com.paid.Diabo --output /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app --target-triple arm64-apple-ios17.0-simulator --binary-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo --dependency-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo_dependency_info.dat --stringsdata-file /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftFileList --metadata-file-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyMetadataFileList --static-metadata-file-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyStaticMetadataFileList --swift-const-vals-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Objects-normal/arm64/Diabo.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-01-11 10:54:35.558 appintentsmetadataprocessor[57269:19940987] Starting appintentsmetadataprocessor export
+2026-01-11 10:54:35.559 appintentsmetadataprocessor[57269:19940987] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+AppIntentsSSUTraining (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Info.plist --temp-dir-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/ssu --bundle-id com.paid.Diabo --product-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app --extracted-metadata-path /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Metadata.appintents --metadata-file-list /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Intermediates.noindex/Diabo.build/Debug-iphonesimulator/Diabo.build/Diabo.DependencyMetadataFileList --archive-ssu-assets
+2026-01-11 10:54:35.575 appintentsnltrainingprocessor[57270:19940989] Parsing options for appintentsnltrainingprocessor
+2026-01-11 10:54:35.575 appintentsnltrainingprocessor[57270:19940989] No AppShortcuts found - Skipping.
+
+CodeSign /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/Diabo.debug.dylib
+
+CodeSign /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/__preview.dylib (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app/__preview.dylib
+
+CodeSign /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app
+
+RegisterExecutionPolicyException /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-RegisterExecutionPolicyException /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app
+
+Validate /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    builtin-validationUtility /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app (in target 'Diabo' from project 'Diabo')
+    cd /Users/adithyaanand/Desktop/Medisync-Diabo/Diabo
+    /usr/bin/touch -c /Users/adithyaanand/Library/Developer/Xcode/DerivedData/Diabo-hepanazjxbdhyofuedhffkymppql/Build/Products/Debug-iphonesimulator/Diabo.app
+
+** BUILD SUCCEEDED **
+
